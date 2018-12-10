@@ -53,11 +53,13 @@ namespace OpenGLProject
             //Compile our shaders
             cubeProgram = new ShaderProgram(Shaders.CubeVertexShader, Shaders.CubeFragmentShader);
             bkgProgram = new ShaderProgram(Shaders.BkgVertexShader, Shaders.BkgFragmentShader);
-            
+            Matrix4 view_matrix = Matrix4.LookAt(new Vector3(0, 0, 10), Vector3.Zero, new Vector3(0, 1, 0));
+            Matrix4 projection_matrix = Matrix4.CreatePerspectiveFieldOfView(0.45f, (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 1000f);
+
             cubeProgram.Use();
-            cubeProgram["view_matrix"].SetValue(Matrix4.LookAt(new Vector3(0, 0, 10), Vector3.Zero, new Vector3(0, 1, 0)));
-            cubeProgram["projection_matrix"].SetValue(Matrix4.CreatePerspectiveFieldOfView(0.45f, (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 1000f));
-            cubeProgram["light_direction"].SetValue(new Vector3(0, 0, 1));
+            cubeProgram["view_matrix"].SetValue(view_matrix);
+            cubeProgram["projection_matrix"].SetValue(projection_matrix);
+            //cubeProgram["light_direction"].SetValue(new Vector3(0, 0, 1));
 
             //Create a cube
             cube = new VBO<Vector3>(new Vector3[] {
@@ -69,12 +71,12 @@ namespace OpenGLProject
                 new Vector3(1, 1, -1), new Vector3(1, 1, 1), new Vector3(1, -1, 1), new Vector3(1, -1, -1), //RIGHT
             });
             cubeNormal = new VBO<Vector3>(new Vector3[] {
-                new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0),
-                new Vector3(0, -1, 0), new Vector3(0, -1, 0), new Vector3(0, -1, 0), new Vector3(0, -1, 0),
-                new Vector3(0, 0, 1), new Vector3(0, 0, 1), new Vector3(0, 0, 1), new Vector3(0, 0, 1),
-                new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(0, 0, -1),
-                new Vector3(-1, 0, 0), new Vector3(-1, 0, 0), new Vector3(-1, 0, 0), new Vector3(-1, 0, 0),
-                new Vector3(1, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 0, 0) });
+                new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), //TOP NORMAL
+                new Vector3(0, -1, 0), new Vector3(0, -1, 0), new Vector3(0, -1, 0), new Vector3(0, -1, 0), //BOTTOM NORMAL
+                new Vector3(0, 0, 1), new Vector3(0, 0, 1), new Vector3(0, 0, 1), new Vector3(0, 0, 1), //FRONT NORMAL
+                new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), new Vector3(0, 0, -1), //BACK NORMAL
+                new Vector3(-1, 0, 0), new Vector3(-1, 0, 0), new Vector3(-1, 0, 0), new Vector3(-1, 0, 0), //LEFT NORMAL
+                new Vector3(1, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 0, 0) }); //RIGHT NORMAL
             cubeColor = new VBO<Vector3>(new Vector3[] {
                 new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 0), //GREEN
                 new Vector3(0, 0, 1), new Vector3(0, 0, 1), new Vector3(0, 0, 1), new Vector3(0, 0, 1), //BLUE
@@ -86,8 +88,8 @@ namespace OpenGLProject
             cubeQuads = new VBO<int>(Enumerable.Range(0, 24).ToArray(), BufferTarget.ElementArrayBuffer);
 
             bkgProgram.Use();
-            bkgProgram["view_matrix"].SetValue(Matrix4.LookAt(new Vector3(0, 0, 10), Vector3.Zero, new Vector3(0, 1, 0)));
-            bkgProgram["projection_matrix"].SetValue(Matrix4.CreatePerspectiveFieldOfView(0.45f, (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 1000f));
+            bkgProgram["view_matrix"].SetValue(view_matrix);
+            bkgProgram["projection_matrix"].SetValue(projection_matrix);
 
             //Create a square cover
             bkg = new VBO<Vector3>(new Vector3[] {
@@ -107,7 +109,7 @@ namespace OpenGLProject
             //Clear both the color and depth bits
             Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            CoverRender();
+            BkgRender();
             CubeRender();
 
             //Flush buffer to display
@@ -115,7 +117,7 @@ namespace OpenGLProject
             //Glut.glutSwapBuffers();
         }
 
-        private static void CoverRender()
+        private static void BkgRender()
         {
             bkgProgram.Use();
             bkgProgram["model_matrix"].SetValue(Matrix4.CreateTranslation(new Vector3(0, 0, -50)));
